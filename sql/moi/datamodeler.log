@@ -1,0 +1,44 @@
+/*ALTER TABLE equipe MODIFY nom_equipe VARCHAR2(100 BYTE);
+
+INSERT INTO equipe ( equipeid ,nom_equipe , nom_court , participe )
+SELECT DISTINCT t.team_api_id, t.team_long_name , t.team_short_name,m.league_id
+FROM DATAL3.team t , DATAL3.match m 
+WHERE m.home_team_api_id = t.team_api_id
+;*/
+CREATE TABLE Saison (
+saisonid Integer,
+libelle varchar2(100),
+dateDeb date,
+dateFin date,
+constraint PK_Saison PRIMARY KEY (saisonid)
+);
+CREATE SEQUENCE SEQ_SAISON;
+/*SEQ_SAISON.CURRVAL;
+SEQ_SAISON.NEXTVAL;
+*/
+CREATE OR REPLACE TRIGGER TGR_SAISON
+BEFORE INSERT ON SAISON FOR EACH ROW
+BEGIN 
+SELECT SEQ_SAISON.NEXTVAL INTO :new.SAISONID FROM DUAL;
+END;
+/
+DELETE FROM SAISON;
+
+INSERT INTO saison (libelle , datedeb , datefin ) 
+SELECT  DISTINCT m.season , to_date('01/08'||SUBSTR(m.season,1,4)) , to_date('30/06'||SUBSTR(m.season,6,4))
+FROM DATAl3.match m ;
+
+DELETE FROM Joueur;
+ALTER TABLE Joueur MODIFY nom_joueur VARCHAR2(100 BYTE);
+ALTER TABLE Joueur MODIFY prenom_joueur VARCHAR2(100 BYTE);
+ALTER TABLE Joueur MODIFY poids NUMBER(38 );
+ALTER TABLE Joueur MODIFY taille NUMBER(38);
+ALTER TABLE Joueur MODIFY joueurid NUMBER(38,0);
+
+DELETE FROM joueur;
+
+INSERT INTO Joueur ( joueurID , nom_joueur , prenom_joueur , datenaissance , taille ,poids) 
+SELECT DISTINCT p.player_api_id , SUBSTR(p.player_name,1,INSTR(p.player_name,' ')),  SUBSTR(p.player_name,INSTR(p.player_name,' ')), to_date( p.birthday,'YYYY-MM-DD HH24:MI:SS') , p.height , p.weight/2.2046
+FROM DATAl3.player p;
+
+
